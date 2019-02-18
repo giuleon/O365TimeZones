@@ -21,30 +21,27 @@ namespace O365.Regional.Settings
             var siteURL = Environment.GetEnvironmentVariable("siteURL");
             var spTimeZones = new List<SPTimeZone>();
             var result = await Task.Run(async () => {
-                // Get access to source site
                 using (var ctx = new ClientContext(siteURL))
                 {
                     var user = Environment.GetEnvironmentVariable("spAdminUser");
                     var psw = Environment.GetEnvironmentVariable("password");
-                    //Provide count and pwd for connecting to the source
                     var passWord = new SecureString();
                     foreach (char c in psw.ToCharArray()) passWord.AppendChar(c);
                     ctx.Credentials = new SharePointOnlineCredentials(user, passWord);
-
-                    // Actual code for operations
                     Web web = ctx.Web;
                     TimeZoneCollection tzc = ctx.Web.RegionalSettings.TimeZones;
                     ctx.Load(tzc);
-                    //ctx.Load(web);
                     await ctx.ExecuteQueryAsync();
 
                     var timeZones = tzc.ToList();
 
                     foreach (var item in timeZones)
                     {
-                        var spTimeZone = new SPTimeZone();
-                        spTimeZone.Id = item.Id;
-                        spTimeZone.Description = item.Description;
+                        var spTimeZone = new SPTimeZone
+                        {
+                            Id = item.Id,
+                            Description = item.Description
+                        };
                         spTimeZones.Add(spTimeZone);
                     }
 
